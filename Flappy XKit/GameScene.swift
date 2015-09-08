@@ -74,6 +74,8 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         setupPlayer()
         setupSombrero()
         startSpawning()
+        
+        flapPlayer() // give the user a chance!
     }
     
     // MARK: Setup methods
@@ -269,6 +271,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         case .Falling:
             break
         case .ShowingScore:
+            switchToNewGame()
             break
         case .GameOver:
             break
@@ -375,6 +378,15 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         gameState = .ShowingScore
         player.removeAllActions()
         stopSpawning()
+    }
+    
+    func switchToNewGame() {
+        if let skView = view {
+            let newScene = GameScene(size: size)
+            let transition = SKTransition.fadeWithColor(SKColor.blackColor(), duration: 0.5) //crossFadeWithDuration(1.0)
+            runAction(popAction)
+            skView.presentScene(newScene, transition: transition)
+        }
     }
     
     // MARK: Physics
