@@ -19,6 +19,8 @@ class GameScene: SKScene {
     
     let kGravity: CGFloat = -1500.0 // tweak for best game feel; units are points/s²; 1000 is about earth gravity
     let kImpulse: CGFloat = 400.0 // tweak for different flap velocity; units are points/s
+    let kNumForegrounds = 2 // this could be calculated from scene width and ground image width
+    let kGroundSpeed: CGFloat = 150.0 // units are points/s
     
     let worldNode = SKNode() // makes entire world movable as a unit
     var playableStart = CGFloat(0) // Y position of ground line (where foreground and background images touch)
@@ -57,11 +59,15 @@ class GameScene: SKScene {
     }
     
     func setupForeground() {
-        let foreground = SKSpriteNode(imageNamed: "Ground")
-        foreground.anchorPoint = CGPoint(x: 0, y: 1) // left X, top Y
-        foreground.position = CGPoint(x: 0, y: playableStart)
-        foreground.zPosition = Layer.Foreground.rawValue
-        worldNode.addChild(foreground)
+        for i in 0..<kNumForegrounds {
+            let foreground = SKSpriteNode(imageNamed: "Ground")
+            foreground.anchorPoint = CGPoint(x: 0, y: 1) // left X, top Y
+            // NOTE: fix bug in Ray's code here: Ray uses the scene's size.width, but for tiling more than one small image we would want to use the image's width instead; in this case, it works out the same
+            foreground.position = CGPoint(x: CGFloat(i) * foreground.size.width, y: playableStart)
+            foreground.zPosition = Layer.Foreground.rawValue
+            foreground.name = "foreground" // common name for later enumeration by name
+            worldNode.addChild(foreground)
+        }
     }
     
     func setupPlayer() {
@@ -97,6 +103,7 @@ class GameScene: SKScene {
         lastUpdateTime = currentTime
         
         updatePlayer()
+        updateForeground()
     }
     
     func updatePlayer() {
@@ -122,4 +129,18 @@ class GameScene: SKScene {
             playerGrounded = false
         }
     }
+    
+    func updateForeground() {
+        worldNode.enumerateChildNodesWithName("foreground", usingBlock: { node, stop in
+            if let foreground = node as? SKSpriteNode {
+                let moveAmount = CGPoint(x: -self.kGroundSpeed * CGFloat(self.dt), y: 0)
+                foreground.position += moveAmount
+                
+                if foreground.position.x < -foreground.size.width {
+                    foreground.position += CGPoint(x: foreground.size.width * CGFloat(self.kNumForegrounds), y: 0)
+                }
+            }
+        })
+    }
+    
 }
