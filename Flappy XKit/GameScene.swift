@@ -23,7 +23,16 @@ struct PhysicsCategory {
     static let Ground: UInt32 = 1 << 2
 }
 
-class GameScene: SKScene {
+enum GameState {
+    case MainMenu
+    case Tutorial
+    case Play
+    case Falling
+    case ShowingScore
+    case GameOver
+}
+
+class GameScene: SKScene, SKPhysicsContactDelegate {
     
     let kGravity: CGFloat = -1500.0 // tweak for best game feel; units are points/s²; 1000 is about earth gravity
     let kImpulse: CGFloat = 400.0 // tweak for different flap velocity; units are points/s
@@ -42,8 +51,10 @@ class GameScene: SKScene {
     var lastUpdateTime: NSTimeInterval = 0
     var dt: NSTimeInterval = 0
     var playerVelocity = CGPoint.zeroPoint
-    var playerGrounded = false // MLM: added to detect state of being on ground (for sound playback)
     let sombrero = SKSpriteNode(imageNamed: "Sombrero")
+    var hitGround = false // physics collision detected: grounded
+    var hitObstacle = false // physics collision detected: obstacle
+    var gameState: GameState = .Play
     
     let flapAction = SKAction.playSoundFileNamed("flapping.wav", waitForCompletion: false)
     let hitGroundAction = SKAction.playSoundFileNamed("hitGround.wav", waitForCompletion: false)
@@ -55,6 +66,7 @@ class GameScene: SKScene {
 
     override func didMoveToView(view: SKView) {
         physicsWorld.gravity = CGVector(dx: 0, dy: 0)
+        physicsWorld.contactDelegate = self
         
         addChild(worldNode)
         setupBackground()
@@ -172,6 +184,7 @@ class GameScene: SKScene {
         let bottomObstacleMin = bottomObstacleMidpointY + playableHeight * kBottomObstacleMinFraction
         let bottomObstacleMax = bottomObstacleMidpointY + playableHeight * kBottomObstacleMaxFraction
         bottomObstacle.position = CGPointMake(startX, CGFloat.random(min: bottomObstacleMin, max: bottomObstacleMax))
+        bottomObstacle.name = "Obstacle" // give all obstacles same name to allow single point of removal
         worldNode.addChild(bottomObstacle)
         
         let topObstacle = createObstacle()
@@ -179,6 +192,7 @@ class GameScene: SKScene {
         let bottomObstacleTopY = (bottomObstacle.position.y + bottomObstacle.size.height/2)
         let playerGap = kObstacleGapToPlayerHeightRatio * player.size.height
         topObstacle.position = CGPointMake(startX, bottomObstacleTopY + playerGap + topObstacle.size.height/2)
+        topObstacle.name = "Obstacle" // give all obstacles same name to allow single point of removal
         worldNode.addChild(topObstacle)
 
         // set up the obstacle's move
@@ -206,7 +220,15 @@ class GameScene: SKScene {
             firstDelay, foreverSpawn
         ])
         // scene itself should run this, since the code isn't specific to any nodes
-        runAction(overallSequence)
+        runAction(overallSequence, withKey: "spawn")
+    }
+    
+    func stopSpawning() {
+        removeActionForKey("spawn")
+        // single-point obstacle action removal (maybe he really needs to use Top and Bottom different names, but we'll see)
+        worldNode.enumerateChildNodesWithName("Obstacle", usingBlock: {node, stop in
+            node.removeAllActions()
+        })
     }
     
     func tipSombrero() {
@@ -236,7 +258,21 @@ class GameScene: SKScene {
     }
     
     override func touchesBegan(touches: Set<NSObject>, withEvent event: UIEvent) {
-        flapPlayer()
+        switch gameState {
+        case .MainMenu:
+            break
+        case .Tutorial:
+            break
+        case .Play:
+            flapPlayer()
+            break
+        case .Falling:
+            break
+        case .ShowingScore:
+            break
+        case .GameOver:
+            break
+        }
     }
     
     // MARK: Updates
@@ -250,8 +286,26 @@ class GameScene: SKScene {
         }
         lastUpdateTime = currentTime
         
-        updatePlayer()
-        updateForeground()
+        switch gameState {
+        case .MainMenu:
+            break
+        case .Tutorial:
+            break
+        case .Play:
+            updatePlayer()
+            updateForeground()
+            checkHitObstacle()
+            checkHitGround()
+            break
+        case .Falling:
+            updatePlayer()
+            checkHitGround()
+            break
+        case .ShowingScore:
+            break
+        case .GameOver:
+            break
+        }
     }
     
     func updatePlayer() {
@@ -269,12 +323,6 @@ class GameScene: SKScene {
         let playerBottomDistanceFromMiddle = player.size.height/2
         if player.position.y - playerBottomDistanceFromMiddle < playableStart {
             player.position.y = playableStart + playerBottomDistanceFromMiddle
-            if !playerGrounded {
-                runAction(hitGroundAction)
-            }
-            playerGrounded = true
-        } else {
-            playerGrounded = false
         }
     }
     
@@ -289,6 +337,57 @@ class GameScene: SKScene {
                 }
             }
         })
+    }
+    
+    func checkHitObstacle() {
+        if hitObstacle {
+            hitObstacle = false
+            switchToFalling()
+        }
+    }
+    
+    func checkHitGround() {
+        if hitGround {
+            hitGround = false
+            playerVelocity = CGPoint(x: 0, y: 0)
+            player.zRotation = CGFloat(-90).degreesToRadians()
+            player.position = CGPoint(x: player.position.x, y: playableStart + player.size.width/2)
+            runAction(hitGroundAction)
+            switchToShowScore()
+        }
+    }
+    
+    // MARK: Game states
+    
+    func switchToFalling() {
+        gameState = .Falling
+        
+        // sequence the sound effects (whack, then falling)
+        runAction(SKAction.sequence([whackAction,
+            SKAction.waitForDuration(0.1),
+            fallingAction]))
+        
+        player.removeAllActions()
+        stopSpawning()
+    }
+    
+    func switchToShowScore() {
+        gameState = .ShowingScore
+        player.removeAllActions()
+        stopSpawning()
+    }
+    
+    // MARK: Physics
+    
+    func didBeginContact(contact: SKPhysicsContact) {
+        let other = contact.bodyA.categoryBitMask == PhysicsCategory.Player ? contact.bodyB : contact.bodyA
+        
+        if other.categoryBitMask == PhysicsCategory.Ground {
+            hitGround = true
+        }
+        if other.categoryBitMask == PhysicsCategory.Obstacle {
+            hitObstacle = true
+        }
     }
     
 }
