@@ -36,3 +36,6 @@ I wish to thank the following for ideas used in the course of the project. Consi
 1. The author of the Joytek blog for this article on how to remove the warning about trying to process this README file as a source: http://joytek.blogspot.tw/2011/09/xcode-4-warning-no-rule-to-process-file.html
 
 2. The author of this StackOverflow post that brought FN.1 to my attention: http://stackoverflow.com/questions/6509600/compilation-warning-no-rule-to-process-file-for-architecture-i386
+
+3. The author of the StackOverflow post that converted the provided Objective-C tool to Swift:  http://stackoverflow.com/questions/19040144/spritekits-skphysicsbody-with-polygon-helper-tool
+

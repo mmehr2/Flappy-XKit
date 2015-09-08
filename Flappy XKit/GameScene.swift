@@ -16,6 +16,13 @@ enum Layer: CGFloat {
     case Player
 }
 
+struct PhysicsCategory {
+    static let None: UInt32 = 0
+    static let Player: UInt32 = 1 << 0
+    static let Obstacle: UInt32 = 1 << 1
+    static let Ground: UInt32 = 1 << 2
+}
+
 class GameScene: SKScene {
     
     let kGravity: CGFloat = -1500.0 // tweak for best game feel; units are points/s²; 1000 is about earth gravity
@@ -47,6 +54,8 @@ class GameScene: SKScene {
     let coinAction = SKAction.playSoundFileNamed("coin.wav", waitForCompletion: false)
 
     override func didMoveToView(view: SKView) {
+        physicsWorld.gravity = CGVector(dx: 0, dy: 0)
+        
         addChild(worldNode)
         setupBackground()
         setupForeground()
@@ -65,6 +74,14 @@ class GameScene: SKScene {
         
         playableHeight = background.size.height
         playableStart = size.height - playableHeight
+        
+        // physics engine support - add to scene itself since it's a world boundary
+        let lowerLeft = CGPoint(x: 0, y: playableStart)
+        let lowerRight = CGPoint(x: size.width, y: playableStart)
+        self.physicsBody = SKPhysicsBody(edgeFromPoint: lowerLeft, toPoint: lowerRight)
+        self.physicsBody?.categoryBitMask = PhysicsCategory.Ground
+        self.physicsBody?.collisionBitMask = 0
+        self.physicsBody?.contactTestBitMask = PhysicsCategory.Player
     }
     
     func setupForeground() {
@@ -83,6 +100,30 @@ class GameScene: SKScene {
         //player.anchorPoint = CGPoint(x: 0.5, y: 0) // middle X, bottom Y; middle X and Y is the default
         player.position = CGPoint(x: size.width * 0.2, y: playableStart + playableHeight * 0.4)
         player.zPosition = Layer.Player.rawValue
+
+        // physics body support [**[see FN.3]**]
+        let offsetX = player.size.width * player.anchorPoint.x
+        let offsetY = player.size.height * player.anchorPoint.y
+        
+        let path = CGPathCreateMutable()
+        
+        CGPathMoveToPoint(path, nil, 3 - offsetX, 14 - offsetY)
+        CGPathAddLineToPoint(path, nil, 23 - offsetX, 29 - offsetY)
+        CGPathAddLineToPoint(path, nil, 35 - offsetX, 28 - offsetY)
+        CGPathAddLineToPoint(path, nil, 39 - offsetX, 22 - offsetY)
+        CGPathAddLineToPoint(path, nil, 39 - offsetX, 10 - offsetY)
+        CGPathAddLineToPoint(path, nil, 33 - offsetX, 3 - offsetY)
+        CGPathAddLineToPoint(path, nil, 25 - offsetX, 3 - offsetY)
+        CGPathAddLineToPoint(path, nil, 23 - offsetX, 0 - offsetY)
+        CGPathAddLineToPoint(path, nil, 5 - offsetX, 0 - offsetY)
+        
+        CGPathCloseSubpath(path)
+        
+        player.physicsBody = SKPhysicsBody(polygonFromPath: path)
+        player.physicsBody?.categoryBitMask = PhysicsCategory.Player
+        player.physicsBody?.collisionBitMask = 0
+        player.physicsBody?.contactTestBitMask = PhysicsCategory.Obstacle | PhysicsCategory.Ground
+        
         
         worldNode.addChild(player)
     }
@@ -101,6 +142,25 @@ class GameScene: SKScene {
     func createObstacle() -> SKSpriteNode {
         let sprite = SKSpriteNode(imageNamed: "Cactus")
         sprite.zPosition = Layer.Obstacle.rawValue
+        
+        // physics body for obstacle [**[see FN.3]**]
+        let offsetX = sprite.size.width * sprite.anchorPoint.x
+        let offsetY = sprite.size.height * sprite.anchorPoint.y
+        
+        let path = CGPathCreateMutable()
+        
+        CGPathMoveToPoint(path, nil, 4 - offsetX, 314 - offsetY)
+        CGPathAddLineToPoint(path, nil, 51 - offsetX, 314 - offsetY)
+        CGPathAddLineToPoint(path, nil, 49 - offsetX, 1 - offsetY)
+        CGPathAddLineToPoint(path, nil, 2 - offsetX, 0 - offsetY)
+        
+        CGPathCloseSubpath(path)
+        
+        sprite.physicsBody = SKPhysicsBody(polygonFromPath: path)
+        sprite.physicsBody?.categoryBitMask = PhysicsCategory.Obstacle
+        sprite.physicsBody?.collisionBitMask = 0
+        sprite.physicsBody?.contactTestBitMask = PhysicsCategory.Player
+        
         return sprite
     }
     
