@@ -36,6 +36,7 @@ class GameScene: SKScene {
     var dt: NSTimeInterval = 0
     var playerVelocity = CGPoint.zeroPoint
     var playerGrounded = false // MLM: added to detect state of being on ground (for sound playback)
+    let sombrero = SKSpriteNode(imageNamed: "Sombrero")
     
     let flapAction = SKAction.playSoundFileNamed("flapping.wav", waitForCompletion: false)
     let hitGroundAction = SKAction.playSoundFileNamed("hitGround.wav", waitForCompletion: false)
@@ -50,6 +51,7 @@ class GameScene: SKScene {
         setupBackground()
         setupForeground()
         setupPlayer()
+        setupSombrero()
         startSpawning()
     }
     
@@ -82,16 +84,16 @@ class GameScene: SKScene {
         player.position = CGPoint(x: size.width * 0.2, y: playableStart + playableHeight * 0.4)
         player.zPosition = Layer.Player.rawValue
         
-        // add the sombrero positioned on the player's head, down over the eyes a bit
-        let sombrero = SKSpriteNode(imageNamed: "Sombrero")
-        sombrero.zPosition = player.zPosition
-        let hatTweakX = sombrero.size.width/5 // move to head axis (0 is centered)
-        let hatTweakY: CGFloat = -10.0 // move down to cover top of head
-        sombrero.position = CGPoint(x: hatTweakX, y: player.size.height/2 + sombrero.size.height/2 + hatTweakY)
-        sombrero.name = "hat" // needed to run child action
-        player.addChild(sombrero)
-        
         worldNode.addChild(player)
+    }
+    
+    func setupSombrero() {
+        // add the sombrero positioned on the player's head, down over the eyes a bit
+        // this version from RayW makes no sense to me; why choose the magic numbers?
+        let magicX: CGFloat = 31.0
+        let magicY: CGFloat = 29.0
+        sombrero.position = CGPoint(x: magicX - sombrero.size.width/2, y: magicY - sombrero.size.height/2)
+        player.addChild(sombrero)
     }
     
     // MARK: Gameplay
@@ -154,14 +156,12 @@ class GameScene: SKScene {
         let moveUp = SKAction.moveByX(0, y: kHatMoveDistance, duration: kHatMoveTime)
         moveUp.timingMode = .EaseInEaseOut
         // then move the same distance back down over the same duration
-        let moveDown = SKAction.moveByX(0, y: -kHatMoveDistance, duration: kHatMoveTime)
-        moveDown.timingMode = .EaseInEaseOut
+        let moveDown = moveUp.reversedAction()
         let tipSequence = SKAction.sequence([
             moveUp,
             moveDown
             ])
-        let hatTip = SKAction.runAction(tipSequence, onChildWithName: "hat")
-        player.runAction(hatTip)
+        sombrero.runAction(tipSequence)
     }
     
     func flapPlayer() {
