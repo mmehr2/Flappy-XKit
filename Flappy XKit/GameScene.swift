@@ -27,6 +27,15 @@ class GameScene: SKScene {
     var lastUpdateTime: NSTimeInterval = 0
     var dt: NSTimeInterval = 0
     var playerVelocity = CGPoint.zeroPoint
+    var playerGrounded = false // MLM: added to detect state of being on ground (for sound playback)
+    
+    let flapAction = SKAction.playSoundFileNamed("flapping.wav", waitForCompletion: false)
+    let hitGroundAction = SKAction.playSoundFileNamed("hitGround.wav", waitForCompletion: false)
+    let dingAction = SKAction.playSoundFileNamed("ding.wav", waitForCompletion: false)
+    let whackAction = SKAction.playSoundFileNamed("whack.wav", waitForCompletion: false)
+    let fallingAction = SKAction.playSoundFileNamed("falling.wav", waitForCompletion: false)
+    let popAction = SKAction.playSoundFileNamed("pop.wav", waitForCompletion: false)
+    let coinAction = SKAction.playSoundFileNamed("coin.wav", waitForCompletion: false)
 
     override func didMoveToView(view: SKView) {
         addChild(worldNode)
@@ -65,6 +74,9 @@ class GameScene: SKScene {
     // MARK: Gameplay
     
     func flapPlayer() {
+        // Play sound
+        runAction(flapAction)
+        
         // Apply velocity impulse
         playerVelocity = CGPoint(x: 0, y: kImpulse)
     }
@@ -102,6 +114,12 @@ class GameScene: SKScene {
         let playerBottomDistanceFromMiddle = player.size.height/2
         if player.position.y - playerBottomDistanceFromMiddle < playableStart {
             player.position.y = playableStart + playerBottomDistanceFromMiddle
+            if !playerGrounded {
+                runAction(hitGroundAction)
+            }
+            playerGrounded = true
+        } else {
+            playerGrounded = false
         }
     }
 }
