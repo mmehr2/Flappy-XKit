@@ -35,7 +35,7 @@
 		A61D09761B9E2CD200F5A761 /* hitGround.wav in Resources */ = {isa = PBXBuildFile; fileRef = A61D09611B9E2CD200F5A761 /* hitGround.wav */; };
 		A61D09771B9E2CD200F5A761 /* pop.wav in Resources */ = {isa = PBXBuildFile; fileRef = A61D09621B9E2CD200F5A761 /* pop.wav */; };
 		A61D09781B9E2CD200F5A761 /* whack.wav in Resources */ = {isa = PBXBuildFile; fileRef = A61D09631B9E2CD200F5A761 /* whack.wav */; };
-		A6514EFD1B9E8AA000CA05B1 /* README.md in Sources */ = {isa = PBXBuildFile; fileRef = A6514EFC1B9E8AA000CA05B1 /* README.md */; };
+		A6514EFD1B9E8AA000CA05B1 /* README.md in Resources */ = {isa = PBXBuildFile; fileRef = A6514EFC1B9E8AA000CA05B1 /* README.md */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -301,6 +301,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				A6514EFD1B9E8AA000CA05B1 /* README.md in Resources */,
 				A61D09651B9E2CD200F5A761 /* sprites.atlas in Resources */,
 				A61D09761B9E2CD200F5A761 /* hitGround.wav in Resources */,
 				A61D09731B9E2CD200F5A761 /* ding.wav in Resources */,
@@ -336,7 +337,6 @@
 				A61D096F1B9E2CD200F5A761 /* SKTEffects.swift in Sources */,
 				A61D096B1B9E2CD200F5A761 /* SKAction+SpecialEffects.swift in Sources */,
 				A61D09681B9E2CD200F5A761 /* CGVector+Extensions.swift in Sources */,
-				A6514EFD1B9E8AA000CA05B1 /* README.md in Sources */,
 				A61D096A1B9E2CD200F5A761 /* SKAction+Extensions.swift in Sources */,
 				A61D096C1B9E2CD200F5A761 /* SKColor+Extensions.swift in Sources */,
 				A61D092D1B9E286900F5A761 /* GameViewController.swift in Sources */,

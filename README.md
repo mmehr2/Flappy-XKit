@@ -3,7 +3,7 @@ This clone of the famous FlappyBird game will show how XKit can be used to port 
 Author: Michael L. Mehr (mmehr2 on Github and Twitter)
 Date project coding commenced: Mon, Sept 7, 2015
 
-Plan
+PLAN
 ====
 
 PHASE ONE
@@ -28,3 +28,11 @@ Then I will re-implement the project using these XKit features instead of Sprite
 ALTERNATIVES
 ============
 I have considered re-creating the project as if designed for Phase Two at the start of Phase One, but I've already embarked upon the journey using the exact project from the tutorials, so we will proceed as planned.
+
+MISC PROJECT CREDITS
+====================
+I wish to thank the following for ideas used in the course of the project. Consider these as footnotes as well. I will refer to them within the project as FN.x where x is the number in this list.
+
+1. The author of the Joytek blog for this article on how to remove the warning about trying to process this README file as a source: http://joytek.blogspot.tw/2011/09/xcode-4-warning-no-rule-to-process-file.html
+
+2. The author of this StackOverflow post that brought FN.1 to my attention: http://stackoverflow.com/questions/6509600/compilation-warning-no-rule-to-process-file-for-architecture-i386
