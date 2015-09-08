@@ -11,6 +11,7 @@ import SpriteKit
 // Z-order
 enum Layer: CGFloat {
     case Background
+    case Obstacle
     case Foreground
     case Player
 }
@@ -21,6 +22,11 @@ class GameScene: SKScene {
     let kImpulse: CGFloat = 400.0 // tweak for different flap velocity; units are points/s
     let kNumForegrounds = 2 // this could be calculated from scene width and ground image width
     let kGroundSpeed: CGFloat = 150.0 // units are points/s
+    let kBottomObstacleMinFraction: CGFloat = 0.1 // percent of playableHeight
+    let kBottomObstacleMaxFraction: CGFloat = 0.6 // percent of playableHeight
+    let kObstacleGapToPlayerHeightRatio: CGFloat = 3.5 // ratio of gap between obstacles to player height
+    let kFirstSpawnDelay: NSTimeInterval = 1.75 // sec
+    let kEverySpawnDelay: NSTimeInterval = 1.5 // sec
     
     let worldNode = SKNode() // makes entire world movable as a unit
     var playableStart = CGFloat(0) // Y position of ground line (where foreground and background images touch)
@@ -44,6 +50,7 @@ class GameScene: SKScene {
         setupBackground()
         setupForeground()
         setupPlayer()
+        startSpawning()
     }
     
     // MARK: Setup methods
@@ -78,6 +85,57 @@ class GameScene: SKScene {
     }
     
     // MARK: Gameplay
+    
+    func createObstacle() -> SKSpriteNode {
+        let sprite = SKSpriteNode(imageNamed: "Cactus")
+        sprite.zPosition = Layer.Obstacle.rawValue
+        return sprite
+    }
+    
+    func spawnObstacle() {
+        let bottomObstacle = createObstacle()
+        let startX = size.width + bottomObstacle.size.width/2 // fully off screen to the right
+
+        let bottomObstacleMidpointY = (playableStart - bottomObstacle.size.height/2)
+        let bottomObstacleMin = bottomObstacleMidpointY + playableHeight * kBottomObstacleMinFraction
+        let bottomObstacleMax = bottomObstacleMidpointY + playableHeight * kBottomObstacleMaxFraction
+        bottomObstacle.position = CGPointMake(startX, CGFloat.random(min: bottomObstacleMin, max: bottomObstacleMax))
+        worldNode.addChild(bottomObstacle)
+        
+        let topObstacle = createObstacle()
+        topObstacle.zRotation = CGFloat(180).degreesToRadians() // flip it 180deg around
+        let bottomObstacleTopY = (bottomObstacle.position.y + bottomObstacle.size.height/2)
+        let playerGap = kObstacleGapToPlayerHeightRatio * player.size.height
+        topObstacle.position = CGPointMake(startX, bottomObstacleTopY + playerGap + topObstacle.size.height/2)
+        worldNode.addChild(topObstacle)
+
+        // set up the obstacle's move
+        let moveX = size.width + topObstacle.size.width // from offscreen right to offscreen left (includes one obj.width)
+        let moveDuration = moveX / kGroundSpeed // points divided by points/s = seconds
+        // create a sequence of actions to do the move
+        let sequence = SKAction.sequence([
+            SKAction.moveByX(-moveX, y: 0, duration: NSTimeInterval(moveDuration)),
+            SKAction.removeFromParent()
+        ])
+        // both obstacles run the same sequence and move together across the screen, right to left
+        topObstacle.runAction(sequence)
+        bottomObstacle.runAction(sequence)
+    }
+    
+    func startSpawning() {
+        let firstDelay = SKAction.waitForDuration(kFirstSpawnDelay)
+        let spawn = SKAction.runBlock(spawnObstacle)
+        let everyDelay = SKAction.waitForDuration(kEverySpawnDelay)
+        let spawnSequence = SKAction.sequence([
+            spawn, everyDelay
+        ])
+        let foreverSpawn = SKAction.repeatActionForever(spawnSequence)
+        let overallSequence = SKAction.sequence([
+            firstDelay, foreverSpawn
+        ])
+        // scene itself should run this, since the code isn't specific to any nodes
+        runAction(overallSequence)
+    }
     
     func flapPlayer() {
         // Play sound
