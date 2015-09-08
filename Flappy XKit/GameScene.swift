@@ -81,6 +81,16 @@ class GameScene: SKScene {
         //player.anchorPoint = CGPoint(x: 0.5, y: 0) // middle X, bottom Y; middle X and Y is the default
         player.position = CGPoint(x: size.width * 0.2, y: playableStart + playableHeight * 0.4)
         player.zPosition = Layer.Player.rawValue
+        
+        // add the sombrero positioned on the player's head, down over the eyes a bit
+        let sombrero = SKSpriteNode(imageNamed: "Sombrero")
+        sombrero.zPosition = player.zPosition
+        let hatTweakX = sombrero.size.width/5 // move to head axis (0 is centered)
+        let hatTweakY: CGFloat = -10.0 // move down to cover top of head
+        sombrero.position = CGPoint(x: hatTweakX, y: player.size.height/2 + sombrero.size.height/2 + hatTweakY)
+        sombrero.name = "hat" // needed to run child action
+        player.addChild(sombrero)
+        
         worldNode.addChild(player)
     }
     
@@ -137,9 +147,29 @@ class GameScene: SKScene {
         runAction(overallSequence)
     }
     
+    func tipSombrero() {
+        // move the hat up 12 pixels over .15 sec with ease-in/ease-out timing mode
+        let kHatMoveDistance = CGFloat(12.0) // points, not pixels - do we need to convert?
+        let kHatMoveTime = NSTimeInterval(0.15)
+        let moveUp = SKAction.moveByX(0, y: kHatMoveDistance, duration: kHatMoveTime)
+        moveUp.timingMode = .EaseInEaseOut
+        // then move the same distance back down over the same duration
+        let moveDown = SKAction.moveByX(0, y: -kHatMoveDistance, duration: kHatMoveTime)
+        moveDown.timingMode = .EaseInEaseOut
+        let tipSequence = SKAction.sequence([
+            moveUp,
+            moveDown
+            ])
+        let hatTip = SKAction.runAction(tipSequence, onChildWithName: "hat")
+        player.runAction(hatTip)
+    }
+    
     func flapPlayer() {
         // Play sound
         runAction(flapAction)
+        
+        // Tip the old sombrero
+        tipSombrero()
         
         // Apply velocity impulse
         playerVelocity = CGPoint(x: 0, y: kImpulse)
