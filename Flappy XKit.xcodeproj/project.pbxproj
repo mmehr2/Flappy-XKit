@@ -35,6 +35,7 @@
 		A61D09761B9E2CD200F5A761 /* hitGround.wav in Resources */ = {isa = PBXBuildFile; fileRef = A61D09611B9E2CD200F5A761 /* hitGround.wav */; };
 		A61D09771B9E2CD200F5A761 /* pop.wav in Resources */ = {isa = PBXBuildFile; fileRef = A61D09621B9E2CD200F5A761 /* pop.wav */; };
 		A61D09781B9E2CD200F5A761 /* whack.wav in Resources */ = {isa = PBXBuildFile; fileRef = A61D09631B9E2CD200F5A761 /* whack.wav */; };
+		A6514EFD1B9E8AA000CA05B1 /* README.md in Sources */ = {isa = PBXBuildFile; fileRef = A6514EFC1B9E8AA000CA05B1 /* README.md */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -80,6 +81,7 @@
 		A61D09611B9E2CD200F5A761 /* hitGround.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = hitGround.wav; sourceTree = "<group>"; };
 		A61D09621B9E2CD200F5A761 /* pop.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = pop.wav; sourceTree = "<group>"; };
 		A61D09631B9E2CD200F5A761 /* whack.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = whack.wav; sourceTree = "<group>"; };
+		A6514EFC1B9E8AA000CA05B1 /* README.md */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -103,6 +105,7 @@
 		A61D09181B9E286900F5A761 = {
 			isa = PBXGroup;
 			children = (
+				A6514EFC1B9E8AA000CA05B1 /* README.md */,
 				A61D094A1B9E2CD200F5A761 /* Resources */,
 				A61D09231B9E286900F5A761 /* Flappy XKit */,
 				A61D093D1B9E286900F5A761 /* Flappy XKitTests */,
@@ -333,6 +336,7 @@
 				A61D096F1B9E2CD200F5A761 /* SKTEffects.swift in Sources */,
 				A61D096B1B9E2CD200F5A761 /* SKAction+SpecialEffects.swift in Sources */,
 				A61D09681B9E2CD200F5A761 /* CGVector+Extensions.swift in Sources */,
+				A6514EFD1B9E8AA000CA05B1 /* README.md in Sources */,
 				A61D096A1B9E2CD200F5A761 /* SKAction+Extensions.swift in Sources */,
 				A61D096C1B9E2CD200F5A761 /* SKColor+Extensions.swift in Sources */,
 				A61D092D1B9E286900F5A761 /* GameViewController.swift in Sources */,
@@ -537,6 +541,7 @@
 				A61D09461B9E286900F5A761 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 		A61D09471B9E286900F5A761 /* Build configuration list for PBXNativeTarget "Flappy XKitTests" */ = {
 			isa = XCConfigurationList;
@@ -545,6 +550,7 @@
 				A61D09491B9E286900F5A761 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
 	};
