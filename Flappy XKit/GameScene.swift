@@ -14,6 +14,7 @@ enum Layer: CGFloat {
     case Obstacle
     case Foreground
     case Player
+    case UI
 }
 
 struct PhysicsCategory {
@@ -43,6 +44,8 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     let kObstacleGapToPlayerHeightRatio: CGFloat = 3.5 // ratio of gap between obstacles to player height
     let kFirstSpawnDelay: NSTimeInterval = 1.75 // sec
     let kEverySpawnDelay: NSTimeInterval = 1.5 // sec
+    let kFontName = "AmericanTypewriter-Bold"
+    let kMargin: CGFloat = 20.0 // points; upper margin above score label
     
     let worldNode = SKNode() // makes entire world movable as a unit
     var playableStart = CGFloat(0) // Y position of ground line (where foreground and background images touch)
@@ -55,6 +58,8 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     var hitGround = false // physics collision detected: grounded
     var hitObstacle = false // physics collision detected: obstacle
     var gameState: GameState = .Play
+    var scoreLabel: SKLabelNode!
+    var score = 0
     
     let flapAction = SKAction.playSoundFileNamed("flapping.wav", waitForCompletion: false)
     let hitGroundAction = SKAction.playSoundFileNamed("hitGround.wav", waitForCompletion: false)
@@ -74,11 +79,13 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         setupPlayer()
         setupSombrero()
         startSpawning()
+        setupLabel()
         
         flapPlayer() // give the user a chance!
     }
     
     // MARK: Setup methods
+    
     func setupBackground() {
         let background = SKSpriteNode(imageNamed: "Background")
         background.anchorPoint = CGPoint(x: 0.5, y: 1.0) // middle X, top Y
@@ -151,11 +158,23 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         player.addChild(sombrero)
     }
     
+    func setupLabel() {
+        scoreLabel = SKLabelNode(fontNamed: kFontName)
+        // Ray says that the magic color numbers came from his
+        scoreLabel.fontColor = SKColor(red: 101.0/255.0, green: 71.0/255.0, blue: 73.0/255.0, alpha: 1.0)
+        scoreLabel.position = CGPoint(x: size.width/2, y: size.height - kMargin)
+        scoreLabel.text = "\(score)"
+        scoreLabel.verticalAlignmentMode = .Top
+        scoreLabel.zPosition = Layer.UI.rawValue
+        worldNode.addChild(scoreLabel)
+    }
+    
     // MARK: Gameplay
     
     func createObstacle() -> SKSpriteNode {
         let sprite = SKSpriteNode(imageNamed: "Cactus")
         sprite.zPosition = Layer.Obstacle.rawValue
+        sprite.userData = NSMutableDictionary()
         
         // physics body for obstacle [**[see FN.3]**]
         let offsetX = sprite.size.width * sprite.anchorPoint.x
@@ -186,7 +205,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         let bottomObstacleMin = bottomObstacleMidpointY + playableHeight * kBottomObstacleMinFraction
         let bottomObstacleMax = bottomObstacleMidpointY + playableHeight * kBottomObstacleMaxFraction
         bottomObstacle.position = CGPointMake(startX, CGFloat.random(min: bottomObstacleMin, max: bottomObstacleMax))
-        bottomObstacle.name = "Obstacle" // give all obstacles same name to allow single point of removal
+        bottomObstacle.name = "BottomObstacle"
         worldNode.addChild(bottomObstacle)
         
         let topObstacle = createObstacle()
@@ -194,7 +213,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         let bottomObstacleTopY = (bottomObstacle.position.y + bottomObstacle.size.height/2)
         let playerGap = kObstacleGapToPlayerHeightRatio * player.size.height
         topObstacle.position = CGPointMake(startX, bottomObstacleTopY + playerGap + topObstacle.size.height/2)
-        topObstacle.name = "Obstacle" // give all obstacles same name to allow single point of removal
+        topObstacle.name = "TopObstacle"
         worldNode.addChild(topObstacle)
 
         // set up the obstacle's move
@@ -227,10 +246,12 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     
     func stopSpawning() {
         removeActionForKey("spawn")
-        // single-point obstacle action removal (maybe he really needs to use Top and Bottom different names, but we'll see)
-        worldNode.enumerateChildNodesWithName("Obstacle", usingBlock: {node, stop in
-            node.removeAllActions()
-        })
+        // since Top and Bottom obstacles have different names (due to scoring), we need to do this removal for both
+        ["TopObstacle", "BottomObstacle"].map {
+            self.worldNode.enumerateChildNodesWithName($0, usingBlock: {node, stop in
+                node.removeAllActions()
+            })
+        }
     }
     
     func tipSombrero() {
@@ -299,6 +320,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
             updateForeground()
             checkHitObstacle()
             checkHitGround()
+            updateScore()
             break
         case .Falling:
             updatePlayer()
@@ -358,6 +380,29 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
             runAction(hitGroundAction)
             switchToShowScore()
         }
+    }
+    
+    func updateScore() {
+        let typicalObstacle = "TopObstacle" // pick one arbitrarily
+        worldNode.enumerateChildNodesWithName(typicalObstacle, usingBlock: { node, stop in
+            if let obstacle = node as? SKSpriteNode {
+                 // if current obstacle has a dictionary with the key "Passed", then we're done looking at that obstacle
+                if let passed = obstacle.userData?["Passed"] as? NSNumber
+                    where passed.boolValue {
+                        return
+                }
+                // else if player's position is beyond the obstacle's right edge...
+                if self.player.position.x > obstacle.position.x + obstacle.size.width/2 {
+                    // bump the score
+                    self.score++
+                    self.scoreLabel.text = "\(self.score)"
+                    // play a sound
+                    self.runAction(self.coinAction)
+                    // and set the Passed key in its dictionary
+                    obstacle.userData?["Passed"] = NSNumber(bool: true)
+                }
+            }
+        })
     }
     
     // MARK: Game states
