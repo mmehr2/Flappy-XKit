@@ -33,6 +33,12 @@ enum GameState {
     case GameOver
 }
 
+// protocol for sharing bragging rights
+protocol GameSceneDelegate {
+    func screenshot() -> UIImage
+    func shareString(string: String, url: NSURL, image: UIImage)
+}
+
 class GameScene: SKScene, SKPhysicsContactDelegate {
     
     let kGravity: CGFloat = -1500.0 // tweak for best game feel; units are points/s²; 1000 is about earth gravity
@@ -62,6 +68,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     var gameState: GameState = .Play
     var scoreLabel: SKLabelNode!
     var score = 0
+    var gameSceneDelegate: GameSceneDelegate
     
     let flapAction = SKAction.playSoundFileNamed("flapping.wav", waitForCompletion: false)
     let hitGroundAction = SKAction.playSoundFileNamed("hitGround.wav", waitForCompletion: false)
@@ -71,6 +78,15 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     let popAction = SKAction.playSoundFileNamed("pop.wav", waitForCompletion: false)
     let coinAction = SKAction.playSoundFileNamed("coin.wav", waitForCompletion: false)
 
+    init(size: CGSize, delegate: GameSceneDelegate) {
+        self.gameSceneDelegate = delegate
+        super.init(size: size)
+    }
+    
+    required init?(coder aDecoder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+    
     override func didMoveToView(view: SKView) {
         physicsWorld.gravity = CGVector(dx: 0, dy: 0)
         physicsWorld.contactDelegate = self
@@ -380,6 +396,10 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     }
     
     override func touchesBegan(touches: Set<NSObject>, withEvent event: UIEvent) {
+        
+        let touch = touches.first as? UITouch
+        let touchLocation = touch?.locationInNode(self)
+        
         switch gameState {
         case .MainMenu:
             break
@@ -393,7 +413,12 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         case .ShowingScore:
             break
         case .GameOver:
-            switchToNewGame()
+            // NOTE: split tap events by half-screen: left half will restart, right half (40%??) will share
+            if touchLocation?.x > size.width * 0.6 {
+                shareScore()
+            } else {
+                switchToNewGame()
+            }
             break
         }
     }
@@ -527,7 +552,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     
     func switchToNewGame() {
         if let skView = view {
-            let newScene = GameScene(size: size)
+            let newScene = GameScene(size: size, delegate: gameSceneDelegate)
             let transition = SKTransition.fadeWithColor(SKColor.blackColor(), duration: 0.5) //crossFadeWithDuration(1.0)
             runAction(popAction)
             skView.presentScene(newScene, transition: transition)
@@ -553,6 +578,18 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         ++score
         if score > bestScore() {
             setBestScore(score)
+        }
+    }
+    
+    func shareScore() {
+        let kAppStoreID = 0 //82406590 // NOTE: this is Ray's, we need our own app ID here!!
+        let urlString = "http://itunes.apple.com/app/id\(kAppStoreID)?mt=8"
+        let screenshot = gameSceneDelegate.screenshot()
+        let initialTextString = "OMG! I scored \(score) points in Flappy XKit!"
+        if let url = NSURL(string: urlString) {
+            gameSceneDelegate.shareString(initialTextString, url: url, image: screenshot)
+        } else {
+            // TBD: present the error onscreen somehow
         }
     }
     
