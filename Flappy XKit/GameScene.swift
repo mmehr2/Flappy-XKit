@@ -56,6 +56,9 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     let kAnimationDelay = 0.3 // sec
     let kAppStoreID = 82406590 // NOTE: this is Ray's, we need our own app ID here!!
     let kNumBirdFrames = 4 // animation frames for bird flapping
+    let kMinDegrees: CGFloat = -90 // angular rotation constant
+    let kMaxDegrees: CGFloat = 25 // angular rotation constant
+    let kAngularVelocity: CGFloat = 1000.0 // angular rotation constant
     
     let worldNode = SKNode() // makes entire world movable as a unit
     var playableStart = CGFloat(0) // Y position of ground line (where foreground and background images touch)
@@ -71,6 +74,9 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     var scoreLabel: SKLabelNode!
     var score = 0
     var gameSceneDelegate: GameSceneDelegate
+    var playerAngularVelocity: CGFloat = 0 // angular rotation
+    var lastTouchTime: NSTimeInterval = 0 // for use with angular rotation
+    var lastTouchY: CGFloat = 0.0 // for use with angular rotation
     
     let flapAction = SKAction.playSoundFileNamed("flapping.wav", waitForCompletion: false)
     let hitGroundAction = SKAction.playSoundFileNamed("hitGround.wav", waitForCompletion: false)
@@ -462,6 +468,9 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         
         // Apply velocity impulse
         playerVelocity = CGPoint(x: 0, y: kImpulse)
+        playerAngularVelocity = kAngularVelocity.degreesToRadians()
+        lastTouchTime = lastUpdateTime
+        lastTouchY = player.position.y
     }
     
     override func touchesBegan(touches: Set<NSObject>, withEvent event: UIEvent) {
@@ -549,11 +558,19 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         let positionStepDueToVelocity = playerVelocity * CGFloat(dt)
         player.position += positionStepDueToVelocity
         
-        // Ground check halt (temporary solution)
-        let playerBottomDistanceFromMiddle = player.size.height/2
-        if player.position.y - playerBottomDistanceFromMiddle < playableStart {
-            player.position.y = playableStart + playerBottomDistanceFromMiddle
+        // Apply angular velocity
+        if player.position.y < lastTouchY {
+            playerAngularVelocity = -kAngularVelocity.degreesToRadians()
         }
+        let angleStepDueToAngularVelocity = playerAngularVelocity * CGFloat(dt)
+        player.zRotation += angleStepDueToAngularVelocity
+        player.zRotation = min(max(player.zRotation, kMinDegrees.degreesToRadians()), kMaxDegrees.degreesToRadians())
+        
+//        // Ground check halt (temporary solution)
+//        let playerBottomDistanceFromMiddle = player.size.height/2
+//        if player.position.y - playerBottomDistanceFromMiddle < playableStart {
+//            player.position.y = playableStart + playerBottomDistanceFromMiddle
+//        }
     }
     
     func updateForeground() {
