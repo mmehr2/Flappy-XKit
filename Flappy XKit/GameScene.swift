@@ -54,6 +54,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     let kMargin: CGFloat = 20.0 // points; upper margin above score label
     let kFontColor = SKColor(red: 101.0/255.0, green: 71.0/255.0, blue: 73.0/255.0, alpha: 1.0)
     let kAnimationDelay = 0.3 // sec
+    let kAppStoreID = 82406590 // NOTE: this is Ray's, we need our own app ID here!!
     
     let worldNode = SKNode() // makes entire world movable as a unit
     var playableStart = CGFloat(0) // Y position of ground line (where foreground and background images touch)
@@ -92,14 +93,8 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         physicsWorld.contactDelegate = self
         
         addChild(worldNode)
-        setupBackground()
-        setupForeground()
-        setupPlayer()
-        setupSombrero()
-        startSpawning()
-        setupLabel()
         
-        flapPlayer() // give the user a chance!
+        switchToTutorial()
     }
     
     // MARK: Setup methods
@@ -192,8 +187,6 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
             setBestScore(score)
         }
         
-        //let commonScoreName = "Tutorial" // for all elements, to allow single enum call for removal
-
         let scorecard = SKSpriteNode(imageNamed: "ScoreCard")
         scorecard.position = CGPoint(x: size.width * 0.5, y: size.height * 0.5)
         scorecard.name = "Tutorial"
@@ -283,6 +276,20 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
             ])
         runAction(pops)
    }
+    
+    func setupTutorial() {
+        let tutorial = SKSpriteNode(imageNamed: "Tutorial")
+        tutorial.position = CGPoint(x: size.width * 0.5, y: playableHeight * 0.4 + playableStart)
+        tutorial.name = "Tutorial"
+        tutorial.zPosition = Layer.UI.rawValue
+        worldNode.addChild(tutorial)
+        
+        let ready = SKSpriteNode(imageNamed: "Ready")
+        ready.position = CGPoint(x: size.width * 0.5, y: playableHeight * 0.7 + playableStart)
+        ready.name = "Tutorial"
+        ready.zPosition = Layer.UI.rawValue
+        worldNode.addChild(ready)
+    }
     
     // MARK: Gameplay
     
@@ -404,6 +411,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         case .MainMenu:
             break
         case .Tutorial:
+            switchToPlay()
             break
         case .Play:
             flapPlayer()
@@ -563,6 +571,34 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         gameState = .GameOver
     }
     
+    func switchToTutorial() {
+        gameState = .Tutorial
+        
+        setupBackground()
+        setupForeground()
+        setupPlayer()
+        setupSombrero()
+        setupLabel()
+        setupTutorial()
+    }
+    
+    func switchToPlay() {
+        gameState = .Play
+        
+        // Remove tutorial
+        worldNode.enumerateChildNodesWithName("Tutorial", usingBlock: { node, stop in
+            node.runAction(SKAction.sequence([
+                SKAction.fadeOutWithDuration(0.5),
+                SKAction.removeFromParent()
+                ]))
+        })
+        
+        // Start spawning
+        startSpawning()
+        
+        flapPlayer() // give the user a chance!
+    }
+    
     // MARK: Score
     
     func bestScore() -> Int {
@@ -582,11 +618,10 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     }
     
     func shareScore() {
-        let kAppStoreID = 0 //82406590 // NOTE: this is Ray's, we need our own app ID here!!
         let urlString = "http://itunes.apple.com/app/id\(kAppStoreID)?mt=8"
-        let screenshot = gameSceneDelegate.screenshot()
         let initialTextString = "OMG! I scored \(score) points in Flappy XKit!"
         if let url = NSURL(string: urlString) {
+            let screenshot = gameSceneDelegate.screenshot()
             gameSceneDelegate.shareString(initialTextString, url: url, image: screenshot)
         } else {
             // TBD: present the error onscreen somehow
