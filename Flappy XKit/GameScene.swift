@@ -55,6 +55,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     let kFontColor = SKColor(red: 101.0/255.0, green: 71.0/255.0, blue: 73.0/255.0, alpha: 1.0)
     let kAnimationDelay = 0.3 // sec
     let kAppStoreID = 82406590 // NOTE: this is Ray's, we need our own app ID here!!
+    let kNumBirdFrames = 4 // animation frames for bird flapping
     
     let worldNode = SKNode() // makes entire world movable as a unit
     var playableStart = CGFloat(0) // Y position of ground line (where foreground and background images touch)
@@ -337,6 +338,19 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         learn.runAction(SKAction.repeatActionForever(SKAction.sequence([
             scaleUp, scaleDown
             ])))
+    }
+    
+    func setupPlayerAnimation() {
+        var textures = [SKTexture]()
+        for i in stride(from: 0, to: kNumBirdFrames, by: 1) {
+            textures.append(SKTexture(imageNamed: "Bird\(i)"))
+        }
+        for i in stride(from: kNumBirdFrames-1, through: 0, by: -1) {
+            textures.append(SKTexture(imageNamed: "Bird\(i)"))
+        }
+        
+        let playerAnimation = SKAction.animateWithTextures(textures, timePerFrame: 0.07)
+        player.runAction(SKAction.repeatActionForever(playerAnimation))
     }
     
     // MARK: Gameplay
@@ -639,6 +653,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         setupSombrero()
         setupLabel()
         setupTutorial()
+        setupPlayerAnimation()
     }
     
     func switchToPlay() {
@@ -666,6 +681,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         setupPlayer()
         setupSombrero()
         setupMainMenu()
+        setupPlayerAnimation()
     }
     
     // MARK: Score
