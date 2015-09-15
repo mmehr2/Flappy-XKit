@@ -20,9 +20,9 @@ class GameViewController: UIViewController, GameSceneDelegate {
                 let aspectRatio = skView.bounds.size.height / skView.bounds.size.width
                 let scene = GameScene(size: CGSize(width: 320, height: 320 * aspectRatio), delegate: self, gameState: .MainMenu)
                 
-                skView.showsFPS = true
-                skView.showsNodeCount = true
-                skView.showsPhysics = true
+                skView.showsFPS = false
+                skView.showsNodeCount = false
+                skView.showsPhysics = false
                 skView.ignoresSiblingOrder = true // must set zPosition of each sprite to control order ourselves
                 
                 scene.scaleMode = .AspectFill

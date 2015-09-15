@@ -15,6 +15,7 @@ enum Layer: CGFloat {
     case Foreground
     case Player
     case UI
+    case Flash
 }
 
 struct PhysicsCategory {
@@ -172,6 +173,12 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         
         
         worldNode.addChild(player)
+        
+        let moveUp = SKAction.moveByX(0, y: 10, duration: 0.4)
+        moveUp.timingMode = .EaseInEaseOut
+        let moveDown = moveUp.reversedAction()
+        let repeat = SKAction.repeatActionForever(SKAction.sequence([moveUp, moveDown]))
+        player.runAction(repeat, withKey: "Wobble")
     }
     
     func setupSombrero() {
@@ -557,6 +564,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         // Apply velocity
         let positionStepDueToVelocity = playerVelocity * CGFloat(dt)
         player.position += positionStepDueToVelocity
+        player.position.y = min(player.position.y, size.height)
         
         // Apply angular velocity
         if player.position.y < lastTouchY {
@@ -632,6 +640,18 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     func switchToFalling() {
         gameState = .Falling
         
+        // Screen shake
+        let shake = SKAction.screenShakeWithNode(worldNode, amount: CGPoint(x: 0.0, y: 7.0), oscillations: 10, duration: 1.0)
+        worldNode.runAction(shake)
+        
+        // Screen flash
+        let whiteNode = SKSpriteNode(color: SKColor.whiteColor(), size: size)
+        whiteNode.position = CGPoint(x: size.width/2, y: size.height/2)
+        whiteNode.zPosition = Layer.Flash.rawValue
+        worldNode.addChild(whiteNode)
+        
+        whiteNode.runAction(SKAction.removeFromParentAfterDelay(0.01))
+        
         // sequence the sound effects (whack, then falling)
         runAction(SKAction.sequence([whackAction,
             SKAction.waitForDuration(0.1),
@@ -683,6 +703,9 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
                 SKAction.removeFromParent()
                 ]))
         })
+        
+        // Stop wobbling
+        player.removeActionForKey("Wobble")
         
         // Start spawning
         startSpawning()
