@@ -39,3 +39,4 @@ I wish to thank the following for ideas used in the course of the project. Consi
 
 3. The author of the StackOverflow post that converted the provided Objective-C tool to Swift:  http://stackoverflow.com/questions/19040144/spritekits-skphysicsbody-with-polygon-helper-tool
 
+4. For resizing images for artwork replacement, http://imagesplitter.net was most helpful.

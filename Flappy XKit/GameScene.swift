@@ -113,7 +113,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     // MARK: Setup methods
     
     func setupBackground() {
-        let background = SKSpriteNode(imageNamed: "Background")
+        let background = SKSpriteNode(imageNamed: "XKBackground")
         background.anchorPoint = CGPoint(x: 0.5, y: 1.0) // middle X, top Y
         background.position = CGPoint(x: size.width/2, y: size.height)
         background.zPosition = Layer.Background.rawValue
@@ -133,7 +133,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     
     func setupForeground() {
         for i in 0..<kNumForegrounds {
-            let foreground = SKSpriteNode(imageNamed: "Ground")
+            let foreground = SKSpriteNode(imageNamed: "XKGround")
             foreground.anchorPoint = CGPoint(x: 0, y: 1) // left X, top Y
             // NOTE: fix bug in Ray's code here: Ray uses the scene's size.width, but for tiling more than one small image we would want to use the image's width instead; in this case, it works out the same
             foreground.position = CGPoint(x: CGFloat(i) * foreground.size.width, y: playableStart)
@@ -347,10 +347,10 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         scaleUp.timingMode = .EaseInEaseOut
         let scaleDown = SKAction.scaleTo(0.98, duration: 0.75)
         scaleDown.timingMode = .EaseInEaseOut
+        let repeat = SKAction.repeatActionForever(SKAction.sequence([ scaleUp, scaleDown ]))
+        learn.runAction(repeat)
         
-        learn.runAction(SKAction.repeatActionForever(SKAction.sequence([
-            scaleUp, scaleDown
-            ])))
+        //learn.removeAllActions() // uncomment this to take launch screen shot
     }
     
     func setupPlayerAnimation() {
@@ -363,7 +363,8 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         }
         
         let playerAnimation = SKAction.animateWithTextures(textures, timePerFrame: 0.07)
-        player.runAction(SKAction.repeatActionForever(playerAnimation))
+        let repeat = SKAction.repeatActionForever(playerAnimation)
+        player.runAction(repeat)
     }
     
     // MARK: Gameplay
@@ -722,6 +723,8 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         setupSombrero()
         setupMainMenu()
         setupPlayerAnimation()
+        
+        //player.removeAllActions() // uncomment this to take launch screen shot
     }
     
     // MARK: Score
