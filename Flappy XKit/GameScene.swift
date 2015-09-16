@@ -311,7 +311,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     }
     
     func setupMainMenu() {
-        let logo = SKSpriteNode(imageNamed: "Logo")
+        let logo = SKSpriteNode(imageNamed: "XKLogo")
         logo.position = CGPoint(x: size.width/2, y: size.height * 0.8)
         logo.zPosition = Layer.UI.rawValue
         worldNode.addChild(logo)
@@ -370,7 +370,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     // MARK: Gameplay
     
     func createObstacle() -> SKSpriteNode {
-        let sprite = SKSpriteNode(imageNamed: "Cactus")
+        let sprite = SKSpriteNode(imageNamed: "XKObstacle")
         sprite.zPosition = Layer.Obstacle.rawValue
         sprite.userData = NSMutableDictionary()
         
