@@ -40,3 +40,10 @@ I wish to thank the following for ideas used in the course of the project. Consi
 3. The author of the StackOverflow post that converted the provided Objective-C tool to Swift:  http://stackoverflow.com/questions/19040144/spritekits-skphysicsbody-with-polygon-helper-tool
 
 4. For resizing images for artwork replacement, http://imagesplitter.net was most helpful.
+
+COMMENTS ON CONVERSION TO SWIFT 2.0
+===================================
+
+Everything proceeded automatically until it got to the if let optional testing I had designed to simulate guard statements. Once the guard statements were implemented, everything worked.
+The only remaining issue (just a warning) was the use of map() and not using the result - I replaced it with forEach() and there was no warning.
+There was another issue with compiler options. It complained about not finding a directory for the -F option. I created it (via sudo mkdir -p /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator9.0.sdk/Developer/Library/Frameworks), and then it compiled. Not sure what this is about.

@@ -67,7 +67,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     let player = SKSpriteNode(imageNamed: "Bird0")
     var lastUpdateTime: NSTimeInterval = 0
     var dt: NSTimeInterval = 0
-    var playerVelocity = CGPoint.zeroPoint
+    var playerVelocity = CGPoint.zero
     let sombrero = SKSpriteNode(imageNamed: "Sombrero")
     var hitGround = false // physics collision detected: grounded
     var hitObstacle = false // physics collision detected: obstacle
@@ -177,8 +177,8 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         let moveUp = SKAction.moveByX(0, y: 10, duration: 0.4)
         moveUp.timingMode = .EaseInEaseOut
         let moveDown = moveUp.reversedAction()
-        let repeat = SKAction.repeatActionForever(SKAction.sequence([moveUp, moveDown]))
-        player.runAction(repeat, withKey: "Wobble")
+        let `repeat` = SKAction.repeatActionForever(SKAction.sequence([moveUp, moveDown]))
+        player.runAction(`repeat`, withKey: "Wobble")
     }
     
     func setupSombrero() {
@@ -236,7 +236,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         worldNode.addChild(okButton)
         
         let ok = SKSpriteNode(imageNamed: "OK")
-        ok.position = CGPoint.zeroPoint
+        ok.position = CGPoint.zero
         ok.zPosition = Layer.UI.rawValue
         okButton.addChild(ok)
         
@@ -246,7 +246,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         worldNode.addChild(shareButton)
         
         let share = SKSpriteNode(imageNamed: "Share")
-        share.position = CGPoint.zeroPoint
+        share.position = CGPoint.zero
         share.zPosition = Layer.UI.rawValue
         shareButton.addChild(share)
         
@@ -323,7 +323,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         worldNode.addChild(playButton)
         
         let play = SKSpriteNode(imageNamed: "Play")
-        play.position = CGPoint.zeroPoint
+        play.position = CGPoint.zero
         playButton.addChild(play)
         
         // Rate button
@@ -333,7 +333,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         worldNode.addChild(rateButton)
         
         let rate = SKSpriteNode(imageNamed: "Rate")
-        rate.position = CGPoint.zeroPoint
+        rate.position = CGPoint.zero
         rateButton.addChild(rate)
         
         // Learn button
@@ -347,24 +347,24 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         scaleUp.timingMode = .EaseInEaseOut
         let scaleDown = SKAction.scaleTo(0.98, duration: 0.75)
         scaleDown.timingMode = .EaseInEaseOut
-        let repeat = SKAction.repeatActionForever(SKAction.sequence([ scaleUp, scaleDown ]))
-        learn.runAction(repeat)
+        let `repeat` = SKAction.repeatActionForever(SKAction.sequence([ scaleUp, scaleDown ]))
+        learn.runAction(`repeat`)
         
         //learn.removeAllActions() // uncomment this to take launch screen shot
     }
     
     func setupPlayerAnimation() {
         var textures = [SKTexture]()
-        for i in stride(from: 0, to: kNumBirdFrames, by: 1) {
+        for i in 0.stride(to: kNumBirdFrames, by: 1) {
             textures.append(SKTexture(imageNamed: "Bird\(i)"))
         }
-        for i in stride(from: kNumBirdFrames-1, through: 0, by: -1) {
+        for i in (kNumBirdFrames-1).stride(through: 0, by: -1) {
             textures.append(SKTexture(imageNamed: "Bird\(i)"))
         }
         
         let playerAnimation = SKAction.animateWithTextures(textures, timePerFrame: 0.07)
-        let repeat = SKAction.repeatActionForever(playerAnimation)
-        player.runAction(repeat)
+        let `repeat` = SKAction.repeatActionForever(playerAnimation)
+        player.runAction(`repeat`)
     }
     
     // MARK: Gameplay
@@ -445,7 +445,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     func stopSpawning() {
         removeActionForKey("spawn")
         // since Top and Bottom obstacles have different names (due to scoring), we need to do this removal for both
-        ["TopObstacle", "BottomObstacle"].map {
+        ["TopObstacle", "BottomObstacle"].forEach() {
             self.worldNode.enumerateChildNodesWithName($0, usingBlock: {node, stop in
                 node.removeAllActions()
             })
@@ -481,9 +481,9 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         lastTouchY = player.position.y
     }
     
-    override func touchesBegan(touches: Set<NSObject>, withEvent event: UIEvent) {
+    override func touchesBegan(touches: Set<UITouch>, withEvent event: UIEvent?) {
         
-        let touch = touches.first as? UITouch
+        let touch = touches.first
         let touchLocation = touch?.locationInNode(self)
         
         switch gameState {
@@ -495,7 +495,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
             if touchLocation?.y < size.height * 0.15 {
                 learn()
             } else if touchLocation?.x < size.width * 0.6 {
-                switchToNewGame(gameState: .Tutorial)
+                switchToNewGame(.Tutorial)
             } else {
                 rateApp()
             }
